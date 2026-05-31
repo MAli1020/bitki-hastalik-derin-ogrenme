@@ -1,0 +1,34 @@
+# Veri setleri
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Model ağırlıkları
+*.pt
+*.pth
+
+# IDE / editör
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Ortam değişkenleri
+.env
+.env.*

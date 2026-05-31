@@ -1,0 +1,17 @@
+# --- Derin öğrenme ---
+# GPU kurulumu için: https://pytorch.org/get-started/locally/
+# Örnek (CUDA 12.1): pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+torch>=2.7.0
+torchvision>=0.22.0
+
+# --- Veri işleme ve görselleştirme ---
+pandas>=2.2.0
+matplotlib>=3.8.0
+scikit-learn>=1.5.0
+
+# --- Yapılandırma ---
+PyYAML>=6.0.1
+
+# --- Görüntü augmentasyonu ---
+# Not: torchvision.transforms ayrı bir paket değildir; torchvision ile birlikte gelir.
+albumentations>=1.4.0

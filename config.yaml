@@ -1,0 +1,28 @@
+# Bitki tanıma ve hastalık tespiti proje yapılandırması
+
+project:
+  name: "bitki-tani-hastalik-tespiti"
+  seed: 42
+
+paths:
+  data_dir: "data"
+  plant_doc_dir: "data/plant_doc"
+  plant_disease_dir: "data/plant_disease"
+  output_dir: "outputs"
+  model_dir: "outputs/models"
+  plots_dir: "outputs/plots"
+
+data:
+  image_size: 224
+  batch_size: 32
+
+model:
+  name: "resnet18"
+  pretrained: true
+  num_classes: null  # Veri setine göre otomatik ayarlanır
+
+training:
+  epochs: 25
+  frozen_lr: 0.001        # Dondurulmuş katmanlar (feature extractor) için
+  finetune_lr: 0.0001     # Fine-tuning aşaması için
+  early_stopping_patience: 5
