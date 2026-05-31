@@ -219,45 +219,117 @@ Eğitilmiş modellerle dışarıdan verilen bir yaprak görüntüsünü analiz e
 python -m src.predict --image <resim_yolu>
 ```
 
-**Örnek:**
+Aşağıda, `data/plant_doc/archive/test/images` klasöründen seçilen iki gerçek test görüntüsü üzerinde yapılan tahminler ve terminal çıktıları yer almaktadır. Bu örnekler, sistemin **tek aşamalı** ve **iki aşamalı** çalışma modlarını göstermektedir.
+
+---
+
+### Örnek 1 — Elma pası (yalnızca Aşama 1)
+
+Bu görüntüde yaprakta **elma pası (apple rust)** belirtileri görülmektedir. Sistem önce bitki tanıma modelini çalıştırır; tahmin edilen sınıf elma ile ilişkili olduğundan domates, patates veya biber kapsamına girmez ve **hastalık modeli devreye alınmaz**.
+
+**Test görüntüsü:**
+
+![Örnek 1 — Elma pası yaprak görüntüsü](docs/images/ornek_elma_pas.jpg)
+
+**Çalıştırılan komut:**
 
 ```bash
-python -m src.predict --image ornek_yaprak.jpg
+python -m src.predict --image data/plant_doc/archive/test/images/4_apple_rust2_19011_matt_bertone_jpg.rf.246161a571287d77d3e10c3b6109ead0.jpg
 ```
 
-### Örnek terminal çıktısı
+**Terminal çıktısı:**
 
 ```
 ========================================================
           Yaprak Analizi — İki Aşamalı Tahmin
 ========================================================
 
-Görüntü : /path/to/ornek_yaprak.jpg
-Cihaz   : cpu
+Görüntü : .../4_apple_rust2_19011_matt_bertone_jpg.rf.246161a571287d77d3e10c3b6109ead0.jpg
+Cihaz   : mps
 
 [Aşama 1 — Bitki / yaprak türü]
-  Tahmin    : Potato leaf late blight
-  Güven     : 32.27%
-  Kültür    : Patates (hastalık analizi uygulanacak)
+  Tahmin    : Apple rust leaf
+  Güven     : 95.22%
+  Kültür    : Domates / patates / biber dışı (hastalık analizi atlandı)
   Alternatifler:
-    - Tomato Septoria leaf spot (27.75%)
-    - Apple rust leaf (8.44%)
+    - Tomato Septoria leaf spot (2.52%)
+    - Apple Scab Leaf (1.35%)
+
+Sonuç: Bu yaprak için hastalık modeli devreye alınmadı.
+```
+
+**Sonuç yorumu:** Model, yaprak türünü **Apple rust leaf** olarak **%95,22 güven** ile doğru şekilde sınıflandırmıştır. Kademeli mimarinin tasarım gereği PlantVillage tabanlı hastalık modeli yalnızca domates, patates ve biber için eğitildiğinden bu örnekte Aşama 2 atlanmıştır. Bu davranış, gereksiz ikinci model çağrısını önleyerek sistemi verimli kılar.
+
+---
+
+### Örnek 2 — Domates yaprak küfü / hastalık (iki aşamalı)
+
+Bu görüntü domates yaprağına aittir ve görsel olarak hastalık belirtisi taşımaktadır. Aşama 1 domates kültürünü tespit ettikten sonra Aşama 2 devreye girer; hastalık modeli domatese özgü sınıflar arasından en olası tanıyı üretir.
+
+**Test görüntüsü:**
+
+![Örnek 2 — Domates yaprak hastalığı görüntüsü](docs/images/ornek_domates_hastalik.jpg)
+
+**Çalıştırılan komut:**
+
+```bash
+python -m src.predict --image data/plant_doc/archive/test/images/50_20Leafmold_20Top_jpg.rf.29a941a9c4a999749afc0a94a90b71dd.jpg
+```
+
+**Terminal çıktısı:**
+
+```
+========================================================
+          Yaprak Analizi — İki Aşamalı Tahmin
+========================================================
+
+Görüntü : .../50_20Leafmold_20Top_jpg.rf.29a941a9c4a999749afc0a94a90b71dd.jpg
+Cihaz   : mps
+
+[Aşama 1 — Bitki / yaprak türü]
+  Tahmin    : Tomato leaf mosaic virus
+  Güven     : 24.29%
+  Kültür    : Domates (hastalık analizi uygulanacak)
+  Alternatifler:
+    - Tomato mold leaf (18.37%)
+    - Potato leaf (12.56%)
 
 [Aşama 2 — Hastalık / sağlık durumu]
-  Tahmin    : Potato — Early blight
-  Güven     : 99.99%
+  Tahmin    : Tomato Late blight
+  Güven     : 75.74%
   Durum     : Hastalık belirtisi tespit edildi
   Alternatifler:
-    - Potato — Late blight (0.01%)
-    - Potato — healthy (0.00%)
+    - Tomato Septoria leaf spot (13.04%)
+    - Tomato Leaf Mold (9.38%)
 
 --------------------------------------------------------
-Özet: Potato leaf late blight (32.3%) → Potato — Early blight (100.0%)
-      (patates için hastalık analizi tamamlandı)
+Özet: Tomato leaf mosaic virus (24.3%) → Tomato Late blight (75.7%)
+      (domates için hastalık analizi tamamlandı)
 --------------------------------------------------------
 ```
 
-Domates, patates veya biber **dışındaki** bitkilerde yalnızca Aşama 1 sonuçları gösterilir; hastalık modeli çalıştırılmaz.
+**Sonuç yorumu:**
+
+| Aşama | Tahmin | Güven | Değerlendirme |
+|-------|--------|-------|----------------|
+| 1 — Bitki tanıma | Tomato leaf mosaic virus | %24,29 | Domates kültürü doğru yönlendirildi; PlantDoc’taki 30 sınıf arasında benzer domates yaprak/hastalık sınıfları birbirine yakın olduğundan güven düşük kalmıştır. |
+| 2 — Hastalık tespiti | Tomato Late blight | %75,74 | Domates hastalık modeli yaprakta **hastalık belirtisi** tespit etmiştir; alternatifler arasında *Tomato Leaf Mold* (%9,38) da yer almaktadır. |
+
+Bu örnek, iki modelin birlikte çalıştığı senaryoyu göstermektedir: Aşama 1 kültürü belirler, Aşama 2 ise PlantVillage sınıfları içinden domatese özgü hastalık veya sağlıklı durum tahminini üretir. Aşama 1’deki düşük güven, çok sınıflı PlantDoc veri setinde benzer yaprak görsellerinin karışabildiğini; buna karşılık Aşama 2’nin domates alt kümesinde daha yüksek güvenle sonuç verebildiğini göstermektedir.
+
+---
+
+### Örnek karşılaştırma özeti
+
+| Özellik | Örnek 1 (Elma pası) | Örnek 2 (Domates) |
+|---------|---------------------|-------------------|
+| Kültür | Elma | Domates |
+| Aşama 2 | Atlandı | Çalıştırıldı |
+| Aşama 1 güveni | Yüksek (%95,22) | Düşük (%24,29) |
+| Aşama 2 güveni | — | Orta–yüksek (%75,74) |
+| Sistem davranışı | Yalnızca bitki tanıma | İki aşamalı tam analiz |
+
+Domates, patates veya biber **dışındaki** bitkilerde yalnızca Aşama 1 sonuçları raporlanır; hastalık modeli çalıştırılmaz.
 
 ---
 
