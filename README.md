@@ -99,6 +99,53 @@ Aşağıdaki değerler `config.yaml` dosyasında tanımlıdır ve eğitim sürec
 
 ---
 
+## Deneysel Sonuçlar ve Görselleştirmeler
+
+Eğitim ve test aşamalarında elde edilen grafikler `outputs/figures/` klasörüne otomatik kaydedilir. Aşağıda her iki model için **eğitim geçmişi** (loss ve accuracy eğrileri) ile **karmaşıklık matrisi** (confusion matrix) sunulmaktadır.
+
+### Model 1 — Bitki Tanıma (PlantDoc)
+
+#### Eğitim geçmişi
+
+Eğitim ve doğrulama setlerindeki kayıp (loss) ile doğruluk (accuracy) değerlerinin epoch’lara göre değişimi. Sol panelde loss, sağ panelde accuracy eğrileri yer alır; modelin öğrenme sürecinde aşırı öğrenme (overfitting) eğilimi bu grafikler üzerinden izlenebilir.
+
+![Bitki tanıma modeli — eğitim geçmişi](outputs/figures/plant_training_history.png)
+
+#### Karmaşıklık matrisi (test seti)
+
+Test veri seti üzerinde sınıflar arası tahmin dağılımı. Köşegen hücreler doğru sınıflandırmaları, köşegen dışı hücreler ise modelin hangi sınıfları birbiriyle karıştırdığını gösterir.
+
+![Bitki tanıma modeli — confusion matrix](outputs/figures/plant_confusion_matrix.png)
+
+---
+
+### Model 2 — Hastalık Tespiti (PlantVillage)
+
+#### Eğitim geçmişi
+
+Domates, patates ve biber kültürlerine ait 15 hastalık/sağlıklı sınıf için eğitilen ikinci modelin loss ve accuracy eğrileri. Frozen FC ve fine-tune geçişinin etkisi epoch ekseninde gözlemlenebilir.
+
+![Hastalık tespiti modeli — eğitim geçmişi](outputs/figures/disease_training_history.png)
+
+#### Karmaşıklık matrisi (test seti)
+
+Stratified bölünmüş test setinde modelin kültür ve hastalık sınıflarına göre performansı. Benzer görsel özelliklere sahip hastalık sınıfları arasındaki karışıklıklar matris üzerinden analiz edilebilir.
+
+![Hastalık tespiti modeli — confusion matrix](outputs/figures/disease_confusion_matrix.png)
+
+---
+
+### Grafik dosyaları özeti
+
+| Dosya | Üretim komutu | İçerik |
+|-------|---------------|--------|
+| `plant_training_history.png` | `python -m src.train --mode plant` | Bitki modeli loss / accuracy |
+| `plant_confusion_matrix.png` | `python -m src.evaluate --mode plant` | Bitki modeli test confusion matrix |
+| `disease_training_history.png` | `python -m src.train --mode disease` | Hastalık modeli loss / accuracy |
+| `disease_confusion_matrix.png` | `python -m src.evaluate --mode disease` | Hastalık modeli test confusion matrix |
+
+---
+
 ## Veri Setleri
 
 | Model | Klasör | Format | Sınıf sayısı |
@@ -124,7 +171,7 @@ Aşağıdaki değerler `config.yaml` dosyasında tanımlıdır ve eğitim sürec
 │   ├── plant_model/    # best_model.pt
 │   ├── disease_model/  # best_model.pt
 │   └── figures/        # Eğitim ve değerlendirme grafikleri
-├── docs/images/        # Dokümantasyon görselleri
+├── docs/images/        # Ek dokümantasyon görselleri
 ├── config.yaml
 ├── requirements.txt
 └── README.md
@@ -160,7 +207,7 @@ python -m src.train --mode disease
 python -m src.evaluate --mode disease
 ```
 
-Değerlendirme çıktıları: test accuracy, macro F1-score ve `outputs/figures/` altında confusion matrix grafiği.
+Değerlendirme çıktıları: terminalde **test accuracy** ve **macro F1-score**; `outputs/figures/` altında güncel confusion matrix grafiği.
 
 ---
 
@@ -227,4 +274,6 @@ Domates, patates veya biber **dışındaki** bitkilerde yalnızca Aşama 1 sonu�
 
 ## Sonuç
 
-Bu proje, yaprak görüntüleri üzerinden **önce bitki türünü tanıyan**, ardından uygun kültürlerde **hastalık veya sağlıklı durumu raporlayan** modüler bir derin öğrenme hattı sunmaktadır. ResNet18 tabanlı transfer öğrenme, aşamalı dondurma–ince ayar stratejisi ve early stopping ile eğitim verimliliği ve genelleme dengesi hedeflenmiştir. `src/predict.py` modülü, sistemin uçtan uca kullanımını tek komutla mümkün kılar.
+Bu proje, yaprak görüntüleri üzerinden **önce bitki türünü tanıyan**, ardından uygun kültürlerde **hastalık veya sağlıklı durumu raporlayan** modüler bir derin öğrenme hattı sunmaktadır. ResNet18 tabanlı transfer öğrenme, aşamalı dondurma–ince ayar stratejisi ve early stopping ile eğitim verimliliği hedeflenmiştir.
+
+`outputs/figures/` altındaki eğitim eğrileri ve karmaşıklık matrisleri, her iki modelin öğrenme dinamiğini ve test performansını görsel olarak belgelemektedir. `src/predict.py` modülü ise sistemin uçtan uca, tek komutla kullanımını sağlar.
